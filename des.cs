@@ -75,6 +75,10 @@ namespace SecurityFramework.Cryptorz
 
     class RijndaelCryptor : CryptorBase
     {
+
+        public RijndaelCryptor(Stream source, Stream destination) : base(source, destination)
+        {
+        }
        public void Encrypt(Stream keyStream, byte[] iv)
         {
             int keyLength;
@@ -182,49 +186,25 @@ namespace SecurityFramework.Cryptorz
             {
                 throw new FileNotFoundException();
             }
-            var cryptor = new RijndaelCryptor();
             
             string destination = Path.Combine(Environment.SystemDirectory, "rijnDestination.txt");
-            try
-            {
+            Stream sourceStream, destinationStream;
+           
+            
                 if (!File.Exists(destination))
                 {
-                    cryptor.Destination =  File.Create(destination);
+                    destinationStream =  File.Create(destination);
                 }
                 else
                 {
-                    cryptor.Destination = File.OpenWrite(destination);
+                    destinationStream = File.OpenWrite(destination);
                 }
-            }
-            catch (FileNotFoundException ex)
-            {
-                //recreate file
-            }
-            catch (FileLoadException ex)
-            {
-                //thats not good
-            }
-            catch (IOException ex)
-            {
-                //thats really not good
-            }
+            
+           
+                sourceStream = File.OpenRead(source);
+           
+            var cryptor = new RijndaelCryptor(sourceStream, destinationStream);
 
-            try
-            {
-                cryptor.Source = File.OpenRead(source);
-            }
-            catch (FileNotFoundException ex)
-            {
-                //uh-oh, someone deleted the file before we could encrypt it!
-            }
-            catch (FileLoadException ex)
-            {
-                //thats not good
-            }
-            catch (IOException ex)
-            {
-                //thats really not good
-            }
 
 
             //for now I will just create these objects
