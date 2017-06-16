@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SecurityFramework.DES
+namespace SecurityFramework.Cryptorz
 {
     interface ICryptable
     {
@@ -69,7 +69,7 @@ namespace SecurityFramework.DES
         }   
     }
 
-    class DECCryptor : Cryptor
+    class DESCryptor : Cryptor
     {
         public void Encrypt(Stream keyStream, byte[] iv)
         {
@@ -189,7 +189,62 @@ namespace SecurityFramework.DES
 
         void EncryptWithDES()
         {
-            
+            string source = Path.Combine(Environment.SystemDirectory, "desSource.txt");
+            if (!File.Exists(source))
+            {
+                throw new FileNotFoundException();
+            }
+            var cryptor = new DESCryptor();
+
+            string destination = Path.Combine(Environment.SystemDirectory, "desDestination.txt");
+            try
+            {
+                if (!File.Exists(destination))
+                {
+                    cryptor.SetDestination(File.Create(destination));
+                }
+                else
+                {
+                    cryptor.SetDestination(File.OpenWrite(destination));
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                //recreate file
+            }
+            catch (FileLoadException ex)
+            {
+                //thats not good
+            }
+            catch (IOException ex)
+            {
+                //thats really not good
+            }
+
+            try
+            {
+                cryptor.SetSource(File.OpenRead(source));
+            }
+            catch (FileNotFoundException ex)
+            {
+                //uh-oh, someone deleted the file before we could encrypt it!
+            }
+            catch (FileLoadException ex)
+            {
+                //thats not good
+            }
+            catch (IOException ex)
+            {
+                //thats really not good
+            }
+
+
+            //for now I will just create these objects
+            //in theory, they'll be passed in
+            var r = DES.Create();
+            r.GenerateKey();
+            r.GenerateIV();
+            cryptor.Encrypt(new MemoryStream(r.Key), r.IV);
         }
         
     }
