@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
 
 namespace SecurityFramework.Cryptorz
 {
@@ -18,8 +20,24 @@ namespace SecurityFramework.Cryptorz
 
     abstract class CryptorBase : ICryptable, IDisposable
     {
-        public Stream Source, Destination;
+        private Stream _source, _destination;
 
+        public CryptorBase(Stream source, Stream destination)
+        {
+            _source = source;
+            _destination = destination;
+        }
+         
+        public Stream Source
+        {
+            get { return _source; }
+            
+        }
+
+        public Stream Destination
+        {
+            get { return _destination; }
+        }
 
 
         public void Encrypt(Stream keyStream, byte[] iv)
@@ -37,20 +55,27 @@ namespace SecurityFramework.Cryptorz
             //satisfy interface   
         }
 
-        public void Dispose()
+        
+
+        bool disposed = false;
+        SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+        public void Dispose() 
         {
-            //might need to ensure these are closed
-            Source.Dispose();
-            Destination.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-
+        public virtual void Dispose(bool disposing)
+        {
+            if (disposed) { return;}
+            if (disposing) {  handle.Dispose();}
+            disposed = true;
+        }
     }
 
     class RijndaelCryptor : CryptorBase
     {
-
-        public void Encrypt(Stream keyStream, byte[] iv)
+       public void Encrypt(Stream keyStream, byte[] iv)
         {
             int keyLength;
             try
