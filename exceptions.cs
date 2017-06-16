@@ -34,6 +34,33 @@ namespace SecurityFramework.Cipher
         {
             
         }
+    }
+    public class DeprecatedHashException : CryptographicException
+    {
+        public DeprecatedHashException()
+        {
+            
+        }
+
+        public DeprecatedHashException(string message)
+        {
+            
+        }
+
+        public DeprecatedHashException(int hr)
+        {
+            
+        }
+
+        public DeprecatedHashException(string format, string insert)
+        {
+            
+        }
+
+        public DeprecatedHashException(string message, Exception inner)
+        {
+            
+        }
 
     }
 }
