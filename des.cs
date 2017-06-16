@@ -73,19 +73,19 @@ namespace SecurityFramework.Cryptorz
     {
         public void Encrypt(Stream keyStream, byte[] iv)
         {
-            
-            DESCryptoServiceProvider DES = new DESCryptoServiceProvider();
             int keyLength;
-
-            //get keystream legnth as int
-            if (!int.TryParse(keyStream.Length.ToString(), out keyLength))
+            try
             {
-                //cast to int instead of string
-
+                keyLength = Convert.ToInt32(keyStream.Length - 1);
+            }
+            catch (OverflowException ex)
+            {
                 throw new InvalidKeySizeException();
             }
-            //ensure that the key is a valid key length for DES
 
+            DESCryptoServiceProvider DES = new DESCryptoServiceProvider();
+
+            //ensure that the key is a valid key length for DES
             if (!DES.ValidKeySize(keyLength))
             {
                 throw new InvalidKeySizeException();
