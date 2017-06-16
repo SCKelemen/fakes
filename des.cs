@@ -10,29 +10,17 @@ namespace SecurityFramework.Cryptorz
 {
     interface ICryptable
     {
-        void GetSource();
-        void GetDestination();
-        void GetKey();
-        void GetIV();
         void Encrypt();
         void Encrypt(Stream keyStream, byte[] iv);
         void Decrypt();
 
     }
 
-    abstract class Cryptor
+    abstract class CryptorBase : ICryptable, IDisposable
     {
-        private Stream source, destination;
+        public Stream Source, Destination;
 
-        public void SetSource(Stream  sourceStream)
-        {
-            source = sourceStream;
-        }
 
-        public void SetDestination(Stream destinationStream)
-        {
-            destination = destinationStream;
-        } 
 
         public void Encrypt(Stream keyStream, byte[] iv)
         {
@@ -41,21 +29,25 @@ namespace SecurityFramework.Cryptorz
 
         public void Decrypt()
         {
-            
+            //satisfy interface
         }
 
-        protected Stream getSource()
+        public void Encrypt()
         {
-            return source;
+            //satisfy interface   
         }
 
-        protected Stream getDestination()
+        public void Dispose()
         {
-            return destination;
+            //might need to ensure these are closed
+            Source.Dispose();
+            Destination.Dispose();
         }
+
+
     }
 
-    class RijndaelCryptor : Cryptor
+    class RijndaelCryptor : CryptorBase
     {
 
         public void Encrypt(Stream keyStream, byte[] iv)
@@ -69,7 +61,7 @@ namespace SecurityFramework.Cryptorz
         }   
     }
 
-    class DESCryptor : Cryptor
+    class DESCryptor : CryptorBase
     {
         public void Encrypt(Stream keyStream, byte[] iv)
         {
@@ -100,11 +92,11 @@ namespace SecurityFramework.Cryptorz
             ICryptoTransform cryptoTransform = DES.CreateEncryptor();
 
             //generate xor stream with the destination, the encryptor transform, and this is a write operation
-            CryptoStream cryptoStream = new CryptoStream(getDestination(), cryptoTransform, CryptoStreamMode.Write);
+            CryptoStream cryptoStream = new CryptoStream(Destination, cryptoTransform, CryptoStreamMode.Write);
 
             //write the stream
-            byte[] buffer = new byte[getSource().Length - 1];
-            getSource().Read(buffer, 0, buffer.Length);
+            byte[] buffer = new byte[Source.Length - 1];
+            Source.Read(buffer, 0, buffer.Length);
             cryptoStream.Write(buffer, 0, buffer.Length);
 
 
@@ -140,11 +132,11 @@ namespace SecurityFramework.Cryptorz
             {
                 if (!File.Exists(destination))
                 {
-                    cryptor.SetDestination(File.Create(destination));
+                    cryptor.Destination =  File.Create(destination);
                 }
                 else
                 {
-                    cryptor.SetDestination(File.OpenWrite(destination));
+                    cryptor.Destination = File.OpenWrite(destination);
                 }
             }
             catch (FileNotFoundException ex)
@@ -162,7 +154,7 @@ namespace SecurityFramework.Cryptorz
 
             try
             {
-                cryptor.SetSource(File.OpenRead(source));
+                cryptor.Source = File.OpenRead(source);
             }
             catch (FileNotFoundException ex)
             {
@@ -201,11 +193,11 @@ namespace SecurityFramework.Cryptorz
             {
                 if (!File.Exists(destination))
                 {
-                    cryptor.SetDestination(File.Create(destination));
+                    cryptor.Destination = File.Create(destination);
                 }
                 else
                 {
-                    cryptor.SetDestination(File.OpenWrite(destination));
+                    cryptor.Destination = File.OpenWrite(destination);
                 }
             }
             catch (FileNotFoundException ex)
@@ -223,7 +215,7 @@ namespace SecurityFramework.Cryptorz
 
             try
             {
-                cryptor.SetSource(File.OpenRead(source));
+                cryptor.Source = File.OpenRead(source);
             }
             catch (FileNotFoundException ex)
             {
