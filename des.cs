@@ -63,7 +63,7 @@ namespace SecurityFramework.Cryptorz
             
         }
 
-        public void Decrypt(Stream keySteStream, byte[] iv)
+        public void Decrypt(Stream keyStream, byte[] iv)
         {
             
         }   
