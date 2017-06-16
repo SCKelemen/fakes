@@ -52,7 +52,39 @@ namespace SecurityFramework.Cryptorz
 
         public void Encrypt(Stream keyStream, byte[] iv)
         {
-            
+            int keyLength;
+            try
+            {
+                keyLength = Convert.ToInt32(keyStream.Length - 1);
+            }
+            catch (OverflowException ex)
+            {
+                throw new InvalidKeySizeException();
+            }
+
+            Rijndael rijndael = Rijndael.Create();
+
+            //ensure that the key is a valid key length for Rijndael
+            if (!rijndael.ValidKeySize(keyLength))
+            {
+                throw new InvalidKeySizeException();
+            }
+            //set the Rijndael key as keystream[0, keyStream.Length] the full stream
+            keyStream.Read(rijndael.Key, 0, keyLength);
+
+            //set the IV
+            rijndael.IV = iv;
+
+            //create a transform
+            ICryptoTransform cryptoTransform = rijndael.CreateEncryptor();
+
+            //generate xor stream with the destination, the encryptor transform, and this is a write operation
+            CryptoStream cryptoStream = new CryptoStream(Destination, cryptoTransform, CryptoStreamMode.Write);
+
+            //write the stream
+            byte[] buffer = new byte[Source.Length - 1];
+            Source.Read(buffer, 0, buffer.Length);
+            cryptoStream.Write(buffer, 0, buffer.Length);
         }
 
         public void Decrypt(Stream keyStream, byte[] iv)
