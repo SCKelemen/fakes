@@ -91,4 +91,27 @@ namespace SecurityFramework
         Stream Decrypt(Stream source, Stream destination, Stream key, byte[] IV);
 
     }
+    
+    public class TeeReader
+    {
+        Stream r;
+        Stream w;
+
+        public TeeReader(Stream reader, Stream writer)
+        {
+            r = reader;
+            w = writer;
+        }
+
+        Int64 Read(byte[] p)
+        {
+            var n = this.r.Read(p, 0, p.Length);
+            if (n > 0)
+            {
+                 this.w.Write(p, 0, n);
+
+            }
+            return n;
+        }
+    }
 }
